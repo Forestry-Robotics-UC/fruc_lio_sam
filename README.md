@@ -25,11 +25,6 @@ sudo add-apt-repository ppa:borglab/gtsam-release-4.0
 sudo apt install libgtsam-dev libgtsam-unstable-dev
 ```
 
-### Source your workspace
-```bash
-source /opt/ros/noetic/setup.bash
-```
-
 ## 2. Installation
 
 Use the following commands to download and compile the package in your ROS Noetic workspace.
@@ -47,7 +42,7 @@ Once compilation is complete, source your workspace:
 source devel/setup.bash
 ```
 
-If you are working inside a Docker container, remember to source ROS Noetic as well:
+If you are working inside a Docker container, source ROS Noetic as well:
 
 ```bash
 source /opt/ros/noetic/setup.bash
@@ -196,7 +191,7 @@ imu0_remove_gravitational_acceleration: true
 
 For reliable operation:
 - **LiDAR frequency:** 10 Hz  
-- **IMU frequency:** 100 Hz (uniformly resampled using `go1_lio_preprocessor.py`)  
+- **IMU frequency:** 100 Hz (uniformly resampled using `go1_lio_preprocessor.py`), however recommended to have ≥ 200 Hz. 
 - **GPS frequency:** 1 Hz (RTK Fix recommended)  
 - All topics must share a consistent time reference; use the preprocessed bag to ensure synchronization.
 
