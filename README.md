@@ -10,7 +10,7 @@ This work was developed as part of forest mapping research under the **Institute
 ## 1. Dependencies
 
 This is based on the original ROS1 implementation of [LIO-SAM](https://github.com/TixiaoShan/LIO-SAM).  
-For a ROS2 version, refer to the `ros2` branch in the original repository.
+For a ROS2 version, refer to the `ros2` branch (under progress, will be available soon).
 
 ### ROS (tested with Noetic)
 ```bash
