@@ -64,5 +64,5 @@ for idx, in_bag_path in enumerate(input_bags):
 
     in_bag.close()
     out_bag.close()
-    print(f"✅ Done — LiDAR: {lidar_count}, IMU: {imu_count}, CamIMU: {camimu_count}, GPS: {gps_count}")
+    print(f" Done — LiDAR: {lidar_count}, IMU: {imu_count}, CamIMU: {camimu_count}, GPS: {gps_count}")
     print(f"Output saved: {out_bag_path}")
