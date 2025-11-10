@@ -1,33 +1,33 @@
 LIO-SAM (Go1 Adaptation)
 
-This repository is a ROS Noetic adaptation of LIO-SAM for the Unitree Go1 quadruped, developed as part of the Forestry Robotics UC (FRUC) project at the Institute of Systems and Robotics – University of Coimbra (ISR-UC).
+This repository provides a ROS Noetic adaptation of LIO-SAM for the Unitree Go1 quadruped, developed within the Forestry Robotics UC (FRUC) project at the Institute of Systems and Robotics – University of Coimbra (ISR-UC).
 
-The package provides real-time LiDAR–IMU–GNSS odometry using LIO-SAM as a base framework, modified and tuned for the Go1 robot and its sensor suite. All modifications were implemented and tested inside a CUDA-enabled ROS Noetic Docker environment.
+The package enables real-time LiDAR–IMU–GNSS odometry using the LIO-SAM framework, modified and tuned for the Go1 robot and its onboard/external sensors.
+All tests were performed inside a CUDA-enabled ROS Noetic Docker environment.
 
-Overview
+1. Overview
 
 The original LIO-SAM
- system fuses LiDAR, IMU, and optional GPS data through nonlinear optimization (iSAM2). This version adapts it to the Unitree Go1 robot platform, with configuration and topic-level modifications that allow processing of Go1 sensor data and other non-Velodyne datasets.
+ fuses LiDAR, IMU, and GNSS data using nonlinear optimization (iSAM2).
+This fork adapts the system for the Unitree Go1, introducing changes in topics, coordinate frames, and configuration to support Go1-specific sensors and data.
 
-The following updates were made:
+Key Updates
 
-Integration of Unitree Go1 IMU and external LiDAR sensors (e.g., RS-LiDAR or RealSense D435i).
+Integration of Unitree Go1 IMU and external LiDAR sensors (RS-LiDAR / RealSense D435i).
 
-Adjusted extrinsic parameters and coordinate frames to match the Go1 robot model (base_link, imu_link, lidar_link, gps_link).
+Adjusted extrinsics and frames: base_link, imu_link, lidar_link, gps_link.
 
-Configured robot_localization and navsat_transform_node to fuse GPS odometry with LIO-SAM mapping.
+Added GPS fusion using robot_localization + navsat_transform_node.
 
-Tuned params.yaml for stable operation at lower IMU frequencies (100 Hz).
+Tuned parameters for stable performance at 100 Hz IMU rate.
 
-Verified operation on ROS Noetic with CUDA support.
+Verified compatibility with ROS Noetic + CUDA.
 
-Validated results using multiple datasets, including the Adões Go1 dataset.
+Validated using Adões Go1 dataset and FRUC mapping trials.
 
-Resolved GPS alignment issues through TF corrections and datum configuration.
+2. Environment
 
-Environment
-
-All tests and deployments were performed inside a ROS Noetic Docker container with GPU support.
+All experiments were executed in a Dockerized ROS Noetic workspace with GPU acceleration.
 
 Component	Version / Details
 Base Image	nvidia/cuda:12.8.0-devel-ubuntu20.04
@@ -35,42 +35,39 @@ ROS	Noetic
 CUDA	12.8
 Python	3.10 (via pyenv)
 PyTorch	2.8.0
-CMake / G++	3.16+ / 9.4
+CMake / G++	≥ 3.16 / 9.4
 OS	Ubuntu 20.04
-Hardware	Unitree Go1 (IMU, LiDAR, GNSS)
-
-Docker Execution Example:
-
+Platform	Unitree Go1 (IMU, LiDAR, GNSS)
+Docker Example
 docker run -it --gpus all --net=host --ipc=host \
     -v ~/catkin_ws:/root/catkin_ws \
     liosam-noetic-gpu
 
-Key Configuration Modifications
-1. IMU Setup
+3. Configuration Modifications
+3.1 IMU
 
-The Go1 IMU operates at 100 Hz; LIO-SAM parameters were adjusted to handle this rate.
+Go1 IMU frequency: 100 Hz
 
-imuTopic updated to /unitree/imu or /imu_data_resampled.
+Updated topic: /unitree/imu or /imu_data_resampled
 
-imu0_remove_gravitational_acceleration: true for accurate motion compensation.
+Parameter changes:
 
-Extrinsic calibration values updated for IMU–LiDAR alignment (extrinsicRot, extrinsicRPY).
+imu0_remove_gravitational_acceleration: true
 
-2. LiDAR Input
 
-Adapted for RS-LiDAR and RealSense D435i point clouds.
+Calibrated extrinsicRot and extrinsicRPY for IMU–LiDAR alignment.
 
-Primary point cloud topics: /rslidar_points and /rslidar_points_dense.
+3.2 LiDAR
 
-Extrinsics calibrated for offset between LiDAR and base_link.
+Adapted for RS-LiDAR and RealSense D435i.
 
-Scan parameters adjusted in params.yaml for non-Velodyne sensors.
+Topics: /rslidar_points, /rslidar_points_dense
 
-3. GPS Integration
+Tuned extrinsic offsets and FOV parameters in params.yaml.
 
-Configured robot_localization and navsat_transform_node for GPS odometry fusion.
+3.3 GPS Fusion
 
-Relevant parameters in params.yaml:
+Configured robot_localization and navsat_transform_node for GNSS odometry.
 
 useGpsElevation: true
 zero_altitude: false
@@ -82,82 +79,78 @@ GNSS topic: /gps/fix
 
 Frame: gps_link
 
-Alignment verified between /map, /odom, and /base_link.
+Verified consistent transforms among /map, /odom, and /base_link.
 
-4. Frame Structure
+3.4 Frame Structure
 
-All frames follow the REP-105 convention:
+Coordinate hierarchy (ROS REP-105 compliant):
 
 map → odom → base_link → lidar_link / imu_link / gps_link
 
 
-Extrinsics were tuned to ensure correct orientation and coordinate alignment.
+Extrinsic matrices tuned for correct orientation and gravity alignment.
 
-5. Dataset-Specific Adaptations
+3.5 Dataset Adaptations
 
-Tested on the Adões Go1 dataset containing synchronized LiDAR, IMU, and GNSS data.
+Tested on Adões Go1 dataset (LiDAR + IMU + GNSS).
 
-Verified IMU deskewing, timestamp synchronization, and stable trajectory reconstruction.
+Verified timestamp alignment, IMU deskewing, and trajectory stability.
 
-Optimized GPS factor integration by refining covariance thresholds and iSAM smoothing parameters.
+Optimized GPS factor covariance and smoothing for robust map consistency.
 
-Build and Usage
-
-Build:
-
+4. Build and Usage
+Build
 cd ~/catkin_ws/src
 git clone https://github.com/ArushMendon-dev/lio-sam-go1.git
 cd ..
 catkin_make
 
-
-Launch:
-
+Launch
 roslaunch lio_sam run.launch
 
-
-Run Dataset:
-
+Play Dataset
 rosbag play your_dataset.bag -r 1 --clock
 
-Notes and Observations
+5. Notes and Observations
 
-The RealSense D435i IMU is 6-axis only; the Go1 onboard IMU provides full 9-axis data for LIO-SAM.
+The RealSense D435i provides only a 6-axis IMU; Go1 IMU supplies 9-axis data used by LIO-SAM.
 
-Recommended IMU frequency: ≥100 Hz.
+Recommended IMU frequency ≥ 100 Hz.
 
-For GPS-based corrections:
+To align yaw with GNSS data:
 
 useImuHeadingInitialization: true
 
 
-This ensures yaw alignment with GNSS data without excessive correction.
+Adjust altitude integration using:
 
-Altitude parameters (useGpsElevation, zero_altitude) control whether GPS height affects map elevation.
+useGpsElevation: true
+zero_altitude: false
 
-A tilted or angled map (15–20°) generally indicates incorrect IMU–LiDAR extrinsics or gravity direction settings.
 
-Repository Structure
+If the reconstructed map tilts (≈15–20 °), recheck IMU–LiDAR extrinsics and gravity compensation.
+
+6. Repository Structure
 lio-sam-go1/
 ├── config/              # Parameter and calibration files
-├── launch/              # Launch files for mapping and GPS integration
-├── src/                 # Core LIO-SAM source code
-├── scripts/             # Utility and Python helper nodes
-├── msg/ & srv/          # ROS message and service definitions
-├── urdf/                # Robot model (base_link, IMU, GPS frames)
-├── Dockerfile           # Optional environment definition
+├── launch/              # Launch files for mapping and GPS fusion
+├── src/                 # Core C++ source
+├── scripts/             # Python/utility nodes
+├── msg/  srv/           # ROS message/service definitions
+├── urdf/                # Robot model frames
+├── Dockerfile           # Optional build environment
 ├── LICENSE              # BSD 3-Clause with modification notice
 └── README.md
 
-License and Attribution
+7. License and Attribution
 
-This project extends the original LIO-SAM (Tixiao Shan, 2020)
- implementation under the BSD 3-Clause License.
-Modifications for the Go1 platform © 2025 Arush Mendon, Forestry Robotics UC (FRUC), Institute of Systems and Robotics – University of Coimbra (ISR-UC).
+This work extends the original LIO-SAM (Tixiao Shan, 2020)
+ under the BSD 3-Clause License.
+Modifications for the Unitree Go1 platform © 2025 Arush Mendon, Forestry Robotics UC (FRUC), Institute of Systems and Robotics – University of Coimbra.
 
-If used for academic or research purposes, please cite both the original LIO-SAM publication and this adaptation.
+When used in academic or research contexts, please cite both the original LIO-SAM paper and this adaptation.
 
-Contact
+8. Contact
 
 Author: Arush Mendon
 Affiliation: Institute of Systems and Robotics – University of Coimbra (ISR-UC)
