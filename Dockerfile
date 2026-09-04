@@ -12,6 +12,7 @@ SHELL ["/bin/bash", "-c"]
 # Dependencies first, so editing source does not invalidate this layer.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       python3-colcon-common-extensions \
+      ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
       ros-${ROS_DISTRO}-perception-pcl \
       ros-${ROS_DISTRO}-pcl-msgs \
       ros-${ROS_DISTRO}-vision-opencv \
