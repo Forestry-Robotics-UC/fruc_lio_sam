@@ -184,8 +184,8 @@ override it by hand.
 ## 9. Notes
 
 - Platform URDFs and extrinsics are derived from each robot's own description
-  repo, not from the fruc_lio_sam copies, which disagree with them in places.
-- **params_rslidar and params_apparatus have not yet been tested.**
+  repo, not from the fruc_lio_sam ros1 copies, which disagree with them in places.
+- **params_rslidar has go1 scripts have not yet been tested.**
 - **Velodyne, Livox and Microstrain remain untested here**, as on upstream's
   ROS 2 branch.
 - If the map is tilted or unstable, check the TF tree first, then the extrinsics.
