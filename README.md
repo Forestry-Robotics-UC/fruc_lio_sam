@@ -119,7 +119,8 @@ ros2 bag play <bag> --clock --exclude /tf /tf_static
 Excluding the bag's own `/tf` and `/tf_static` matters on recordings that carry
 conflicting static transforms.
 
-If the recorded topics differ from the config, either edit `pointCloudTopic` /
+> [!NOTE]
+> If the recorded topics differ from the config, either edit `pointCloudTopic` /
 `imuTopic` in the params file, or remap at playback.
 
 ---
