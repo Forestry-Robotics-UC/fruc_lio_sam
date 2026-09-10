@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!-- FRUC Curt Mini platform (Ouster OS-1-128 on a mast).
+
+     Cross-checked against the platform's description,
+     errorcodecritical/curt_dataset_recorder ros2_ws/src/curt_description/urdf/
+     {robot,sensors,properties}.xacro. That repo declares os_sensor->os_lidar 
+     as IDENTITY and puts a 180 deg yaw on base_link->os_sensor.
+
+     using the stanadard: Cloud +x as forward params_curtmini.yaml sets lidarFrame
+     to os_sensor.
+
+     Deliberately no "lidar_link": mapOptimization broadcasts odom -> lidar_link
+     itself (mapOptmization.cpp:1651) and TransformFusion broadcasts
+     odom -> base_link (imuPreintegration.cpp:149). Declaring either here would
+     give that frame two parents. -->
+     
+<robot name="lio" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Base. Its parent is odom, broadcast by TransformFusion. -->
+  <link name="base_link"/>
+
+  <!-- External IMU (Xsens), source of /imu/data. Yawed +90 deg on the chassis. -->
+  <link name="imu"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu"/>
+    <origin xyz="0.062 0.0 0.015" rpy="0 0 1.5707963267948966"/>
+  </joint>
+
+  <!-- Ouster sensor body. Its +x points the way the robot drives. This is
+       also the frame the recorded point clouds are actually in, which is why
+       params_curtmini.yaml names it as lidarFrame. -->
+  <link name="os_sensor"/>
+  <joint name="os_sensor_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="os_sensor"/>
+    <origin xyz="0.1105 0.0 0.404" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Ouster lidar frame -->
+  <link name="os_lidar"/>
+  <joint name="os_lidar_joint" type="fixed">
+    <parent link="os_sensor"/>
+    <child link="os_lidar"/>
+    <origin xyz="0.0 0.0 0.0382" rpy="0 0 3.141592653589793"/>
+  </joint>
+
+  <!-- Same origin as os_sensor, yawed 180 deg. Used only by
+       params_curtmini_flipped.yaml, for bags whose offline decoder rotated the
+       points into what curt_dataset_recorder calls "os_lidar".
+       Harmless when unused: it is a leaf with one parent, and lidarFrame is
+       what selects it. -->
+  <link name="os_sensor_flipped"/>
+  <joint name="os_sensor_flipped_joint" type="fixed">
+    <parent link="os_sensor"/>
+    <child link="os_sensor_flipped"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 3.141592653589793"/>
+  </joint>
+
+  <!-- Ouster internal IMU. Unused by this config (only 100 Hz, and it reports
+       no orientation), kept so /ouster/imu stays resolvable. -->
+  <link name="os_imu"/>
+  <joint name="os_imu_joint" type="fixed">
+    <parent link="os_sensor"/>
+    <child link="os_imu"/>
+    <origin xyz="-0.0024 -0.0097 0.0075" rpy="0 0 0"/>
+  </joint>
+
+  <!-- GPS antenna. The link name MUST stay "gps": navsat_transform_node looks
+       up base_link -> <frame_id of the incoming NavSatFix>, and /fix is stamped
+       "gps" -->
+  <link name="gps"/>
+  <joint name="gps_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps"/>
+    <origin xyz="-0.25 0.11 0.204" rpy="0 0 0"/>
+  </joint>
+
+</robot>

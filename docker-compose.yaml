@@ -1,0 +1,52 @@
+# LIO-SAM - ROS 2 Jazzy. Self-contained: every path here is inside this repo.
+#
+#   docker compose build
+#   docker compose up -d
+#   docker compose exec lio-sam bash
+#
+# Put bags and maps in ./data - it is mounted at /root/data in the container.
+# For RViz, allow the container to reach your X server first:
+#   xhost +local:docker
+
+services:
+  lio-sam:
+    build:
+      context: .
+      args:
+        ROS_DISTRO: jazzy
+    image: lio-sam-jazzy
+    container_name: lio-sam-jazzy
+    hostname: lio-sam-jazzy
+    stdin_open: true
+    tty: true
+    # ROS 2 discovery needs the host network; ipc:host lets the DDS
+    # shared-memory transport work, which matters for full-rate point clouds.
+    network_mode: host
+    ipc: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /etc/localtime:/etc/localtime:ro
+      - ./data:/root/data
+    # Intel/AMD iGPU passthrough for hardware-accelerated rviz2.
+    devices:
+      - /dev/dri:/dev/dri
+    # group_add:
+    #   - "44"    # video
+    #   - "109"   # render
+
+    # NVIDIA GPU passthrough. Uncomment only if the NVIDIA Container Toolkit is
+    # installed - with this block present on a machine without it, `docker
+    # compose up` fails outright rather than falling back to CPU.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
